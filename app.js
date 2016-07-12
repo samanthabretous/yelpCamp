@@ -1,36 +1,15 @@
 var express     = require("express"),
     app         = express(),
     bodyParser  = require("body-parser"),
-    mongoose    = require("mongoose")
+    mongoose    = require("mongoose"),
+    Campground  = require("./models/campground") , 
+    seedDB      = require("./seeds")
 
+seedDB()
 mongoose.connect("mongodb://localhost/yelp_camp")
 app.use(bodyParser.urlencoded({extended: true}))
 app.set("view engine", "ejs")
 
-
-//SCHEMA SETUP
-var campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-})
-
-var Campground = mongoose.model("Campground", campgroundSchema)
-
-// Campground.create(
-//   {
-//     name: "Mountain Goat's Rest", 
-//     image: "https://farm3.staticflickr.com/2353/2069978635_2eb8b33cd4.jpg",
-//     description: "This is a huge granite hill, no bathrooms. No Water. Beautiful granite!"
-    
-//   }, function(err, campground){
-//     if(err){
-//       console.log("Error")
-//     } else {
-//       console.log("New Camp")
-//       console.log(campground)
-//     }
-//   })
 
 
 app.get("/", function(req, res){
@@ -75,10 +54,11 @@ app.get("/campgrounds/new", function(req, res){
 //SHOW route - info about one item
 app.get("/campgrounds/:id", function(req, res){
   //find the campground with provided ID
-  Campground.findById(req.params.id, function(err, foundCampground){
+  Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
     if (err){
-      console.log(err)
+      console.log("Error")
     } else {
+      console.log(foundCampground)
       //render show template with that campground
       res.render("show", {campground: foundCampground})
     }
